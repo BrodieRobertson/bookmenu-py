@@ -1,0 +1,93 @@
+#!/usr/bin/env python3 
+import os
+from subprocess import run, Popen, PIPE, STDOUT
+import argparse
+
+browser = os.getenv("BROWSER")
+launcher = os.getenv("LAUNCHER")
+filePath = "/home/brodie/.config/bookmenu/browser"
+
+def get_args():
+    parser = argparse.ArgumentParser(
+        prog = "bookmenu-py",
+        description = "Typically used to seperate out your bookmarks from your browser " +
+        "however may be suitable handling shorcuts to access files"
+    )
+    
+    parser.add_argument(
+        "-b",
+        "--bookmark",
+        help = "Selects which bookmark to open skipping the selection dialogue",
+        metavar = "BOOKMARK"
+    )
+     
+    parser.add_argument(
+        "-u",
+        "--url",
+        help = "Skips selecting a bookmark and just loads an url directly",
+        metavar = "BOOKMARK"
+    )
+
+    parser.add_argument(
+        "-f",
+        "--filePath",
+        help = "Selects which file should be searched for bookmarks",
+        metavar = "FILE"
+    )
+ 
+    args = parser.parse_args()
+
+    return args
+
+
+def findBookmark(bookmarkName, seperator):
+    # LATER EXPAND USER IF PROVIDED
+    with open(filePath, "r") as bookmarksFile:
+        for line in bookmarksFile:
+            bookmark = line.split(seperator)
+            if len(bookmark) == 2 and bookmark[0] == bookmarkName:
+                # Grab the URL
+                return bookmark[1] 
+
+    return ""
+
+def openBookmark(bookmarkURL):
+    if bookmarkURL == "":
+        print("No bookmark selected")
+        exit() 
+
+    run([browser, bookmarkURL]) 
+
+def convertToNewLineSeperated(file, seperator):
+    convertedFile = ""
+    with open(file, "r") as bookmarksFile: 
+        for line in bookmarksFile:
+            bookmark = line.split(seperator)
+            if len(bookmark) == 2:
+                convertedFile = convertedFile + bookmark[0] + "\n"
+
+    return convertedFile    
+
+def main():
+    args = get_args()
+    bookmarkURL = args.url
+    bookmarkName = args.bookmark
+    seperator = ":"
+
+    # Skip right to opening an address
+    if bookmarkURL != None:
+        openBookmark(bookmarkURL)
+
+    # Open dialogue to find bookmark
+    if bookmarkName == None:
+        convertedFile = convertToNewLineSeperated(filePath, seperator)
+        launcher = Popen(['tofi'], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
+        bookmarkName = launcher.communicate(input=convertedFile)[0].strip()
+
+        openBookmark(findBookmark(bookmarkName, seperator)) 
+    # Attempt to open preselected bookmark 
+    else:
+        openBookmark(findBookmark(bookmarkName, seperator)) 
+    
+if __name__ == "__main__":
+    main()
