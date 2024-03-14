@@ -4,7 +4,6 @@ from subprocess import run, Popen, PIPE, STDOUT
 import argparse
 
 browser = os.getenv("BROWSER")
-launcher = os.getenv("LAUNCHER")
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -45,7 +44,15 @@ def get_args():
         metavar = "SEPERATOR",
         default = ","
     )
-
+    
+    parser.add_argument(
+        "-l" ,
+        "--launcher",
+        help = "Sets the launcher to be used to select a bookmark to open, dmenu, rofi and tofi," +
+        " are known to work but any app that accepts new line seperated data should" +
+        " theorectically function",
+        metavar = "LAUNCHER",
+    )
 
     args = parser.parse_args()
 
@@ -107,11 +114,18 @@ def main():
     args = get_args()
     bookmarkURL = args.url
     bookmarkName = args.bookmark
-    seperator = args.seperator
-    
-    # Set file path
+    seperator = args.seperator 
+
     filePath = os.path.expanduser(args.filePath)
-        
+    
+    # Set the launcher
+    if args.launcher != None:
+        launcher = args.launcher
+    elif os.getenv("LAUNCHER") != None:
+        launcher = os.getenv("LAUNCHER")
+    else:
+        launcher = "dmenu"
+         
     # Skip right to opening an address
     if bookmarkURL != None:
         openBookmark(bookmarkURL)
@@ -119,8 +133,8 @@ def main():
     # Open dialogue to find bookmark
     if bookmarkName == None:
         convertedFile = convertToNewLineSeperated(filePath, seperator)
-        launcher = Popen(['tofi'], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
-        bookmarkName = launcher.communicate(input=convertedFile)[0].strip()
+        launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
+        bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
 
         openBookmark(findBookmark(bookmarkName, seperator, filePath))
     # Attempt to open preselected bookmark
