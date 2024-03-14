@@ -152,8 +152,8 @@ def main():
     
     # Check early if bookmarks file exists
     if not os.path.isfile(filePath):
-        missingBookmarksFile(filePath)
-    
+        missingBookmarksFile(filePath) 
+  
     # Set the browser
     if args.browser is not None:
         browser = args.browser
@@ -165,6 +165,11 @@ def main():
     # Exit early if browser is set wrong 
     if shutil.which(browser) is None:
         missingBrowserFile(browser)
+    
+    # Attempt to open preselected bookmark
+    if bookmarkName is not None: 
+        openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
+        exit()
      
     # Set the launcher
     if args.launcher is not None:
@@ -183,18 +188,14 @@ def main():
         openBookmark(bookmarkURL, browser)
 
     # Open dialogue to find bookmark
-    if bookmarkName is None:
-        convertedFile = convertToNewLineSeperated(filePath, seperator)
-        try: 
-            launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
-            bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
-        except FileNotFoundError:
-            missingLauncherFile(launcher)
+    convertedFile = convertToNewLineSeperated(filePath, seperator)
+    try: 
+        launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
+        bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
+    except FileNotFoundError:
+        missingLauncherFile(launcher)
 
-        openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
-    # Attempt to open preselected bookmark
-    else:
-        openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
+    openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
 
 if __name__ == "__main__":
     main()
