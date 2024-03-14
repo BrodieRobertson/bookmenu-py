@@ -53,12 +53,18 @@ def get_args():
 
 
 def findBookmark(bookmarkName, seperator, filePath):
-    with open(filePath, "r") as bookmarksFile:
-        for line in bookmarksFile:
-            bookmark = line.split(seperator)
-            if len(bookmark) == 2 and bookmark[0] == bookmarkName:
-                # Grab the URL
-                return bookmark[1]
+    try:
+        f = open(filePath, "r")
+    except FileNotFoundError:
+        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist")
+        exit()
+    else:
+        with open(filePath, "r") as bookmarksFile:
+            for line in bookmarksFile:
+                bookmark = line.split(seperator)
+                if len(bookmark) == 2 and bookmark[0] == bookmarkName:
+                    # Grab the URL
+                    return bookmark[1]
 
     return ""
 
@@ -69,17 +75,24 @@ def openBookmark(bookmarkURL):
 
     run([browser, bookmarkURL])
 
-def convertToNewLineSeperated(file, seperator):
+def convertToNewLineSeperated(filePath, seperator):
     convertedList = []
-    with open(file, "r") as bookmarksFile:
-        for line in bookmarksFile:
-            bookmark = line.split(seperator)
-            if len(bookmark) == 2:
-                convertedList.append(bookmark[0] + "\n")
+    try:
+        f = open(filePath, "r")
+    except FileNotFoundError:
+        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist")
+        exit()
+    else:
+        with open(filePath, "r") as bookmarksFile:
+            for line in bookmarksFile:
+                bookmark = line.split(seperator)
+                if len(bookmark) == 2:
+                    convertedList.append(bookmark[0] + "\n")
     
     # Guard against opening launcher with no bookmarks
     if len(convertedList) == 0:
-        print("No bookmarks found, check the file name and seperator used")
+        print("No bookmarks found, check if the file name " + '"' + filePath + '"' +
+        " and seperator " + '"' + seperator + '"' + " are correct")
         exit()
 
     # Sort string into alphabetical order
