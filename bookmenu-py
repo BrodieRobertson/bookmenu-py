@@ -3,6 +3,7 @@ import os
 from subprocess import Popen, PIPE, STDOUT
 import argparse
 import sys
+import shutil
 
 defaultBrowser = "firefox"
 defaultLauncher = "dmenu"
@@ -64,18 +65,36 @@ def get_args():
         " BROWSER BOOKMARK format, most text editors will also work",
         metavar = "BROWSER",
     )
+     
+    parser.add_argument(
+        "-i" ,
+        "--list",
+        help = "Lists out all the bookmarks in the selected file, can be useful when skipping" +
+        " launcher to open to open a bookmark directly",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
     return args
 
-
+def missingBookmarksFile(filePath): 
+    print("Bookmarks file: " + '"' + filePath + '"' + " does not exist", file=sys.stderr)
+    exit()
+    
+def missingLauncherFile(launcher):
+    print("Launcher: " + '"' + launcher + '"' + " not found", file=sys.stderr)            
+    exit()
+    
+def missingBrowserFile(browser): 
+    print("Browser: " + '"' + browser + "'" +  " does not exist", file=sys.stderr)
+    exit()
+    
 def findBookmark(bookmarkName, seperator, filePath):
     try:
         f = open(filePath, "r")
     except FileNotFoundError:
-        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist", file=sys.stderr)
-        exit()
+        missingBookmarksFile(filePath)
     else:
         with open(filePath, "r") as bookmarksFile:
             for line in bookmarksFile:
@@ -94,15 +113,14 @@ def openBookmark(bookmarkURL, browser):
     try:  
         Popen([browser, bookmarkURL])
     except FileNotFoundError:
-        print("Browser: " + '"' + browser + "'" +  " does not exist", file=sys.stderr)
+        missingBrowserFile(browser)
 
 def convertToNewLineSeperated(filePath, seperator):
     convertedList = []
     try:
         f = open(filePath, "r")
     except FileNotFoundError:
-        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist", file=sys.stderr)
-        exit()
+        missingBookmarksFile(filePath)
     else:
         with open(filePath, "r") as bookmarksFile:
             for line in bookmarksFile:
@@ -132,6 +150,10 @@ def main():
 
     filePath = os.path.expanduser(args.filePath)
     
+    # Check early if bookmarks file exists
+    if not os.path.isfile(filePath):
+        missingBookmarksFile(filePath)
+    
     # Set the browser
     if args.browser != None:
         browser = args.browser
@@ -139,7 +161,11 @@ def main():
         browser = os.getenv("BROWSER")
     else:
         browser = defaultBrowser
-    
+
+    # Exit early if browser is set wrong 
+    if shutil.which(browser) == None:
+        missingBrowserFile(browser)
+     
     # Set the launcher
     if args.launcher != None:
         launcher = args.launcher
@@ -147,7 +173,11 @@ def main():
         launcher = os.getenv("LAUNCHER")
     else:
         launcher = defaultLauncher
-         
+
+    # Exit early if launcher is set wrong 
+    if shutil.which(launcher) == None:
+        missingLauncherFile(launcher)
+              
     # Skip right to opening an address
     if bookmarkURL != None:
         openBookmark(bookmarkURL, browser)
@@ -159,8 +189,7 @@ def main():
             launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
             bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
         except FileNotFoundError:
-            print("Launcher: " + '"' + launcher + '"' + " not found", file=sys.stderr)
-            exit()
+            missingLauncherFile(launcher)
 
         openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
     # Attempt to open preselected bookmark
