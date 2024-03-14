@@ -88,13 +88,13 @@ def findBookmark(bookmarkName, seperator, filePath):
 
 def openBookmark(bookmarkURL, browser):
     if bookmarkURL == "":
-        print("No bookmark selected")
+        print("No bookmark selected", file=sys.stderr)
         exit()
 
     try:  
         run([browser, bookmarkURL])
     except FileNotFoundError:
-        print("Browser: " + '"' + browser + "'" +  " does not exist")
+        print("Browser: " + '"' + browser + "'" +  " does not exist", file=sys.stderr)
 
 def convertToNewLineSeperated(filePath, seperator):
     convertedList = []
