@@ -5,7 +5,6 @@ import argparse
 
 browser = os.getenv("BROWSER")
 launcher = os.getenv("LAUNCHER")
-filePath = "/home/brodie/.config/bookmenu/browser"
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -40,7 +39,7 @@ def get_args():
     return args
 
 
-def findBookmark(bookmarkName, seperator):
+def findBookmark(bookmarkName, seperator, filePath):
     # LATER EXPAND USER IF PROVIDED
     with open(filePath, "r") as bookmarksFile:
         for line in bookmarksFile:
@@ -79,7 +78,13 @@ def main():
     bookmarkURL = args.url
     bookmarkName = args.bookmark
     seperator = ":"
-
+    
+    # Set file path
+    if args.filePath != None:
+        filePath = os.path.expanduser(args.filePath)
+    else:
+        filePath = os.path.expanduser("~/.config/bookmenu/bookmarks")
+        
     # Skip right to opening an address
     if bookmarkURL != None:
         openBookmark(bookmarkURL)
@@ -90,10 +95,10 @@ def main():
         launcher = Popen(['tofi'], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
         bookmarkName = launcher.communicate(input=convertedFile)[0].strip()
 
-        openBookmark(findBookmark(bookmarkName, seperator))
+        openBookmark(findBookmark(bookmarkName, seperator, filePath))
     # Attempt to open preselected bookmark
     else:
-        openBookmark(findBookmark(bookmarkName, seperator))
+        openBookmark(findBookmark(bookmarkName, seperator, filePath))
 
 if __name__ == "__main__":
     main()
