@@ -82,6 +82,12 @@ def get_args():
         nargs = 2,
         help = "Adds a new bookmark into the selected bookmarks file"
     )
+    
+    parser.add_argument(
+        "-r",
+        "--removeBookmark", 
+        help = "Removes this book bookmark from the selected bookmarks file" 
+    )
 
     args = parser.parse_args()
 
@@ -184,6 +190,31 @@ def addBookmark(filePath, seperator, newBookmark):
     else: 
         with open(filePath, "a") as bookmarksFile:
             bookmarksFile.write(newBookmark[0] + seperator + newBookmark[1])
+            
+def removeBookmark(filePath, seperator, removeBookmark):
+    foundBookmark = False
+    modifiedBookmarks = ""
+    try: 
+        f = open(filePath, "r+")
+    except FileNotFoundError:
+        missingBookmarksFile(filePath)
+    else: 
+        with open(filePath, "r+") as bookmarksFile:
+            for line in bookmarksFile:
+                currentBookmark = line.split(seperator)
+                if currentBookmark[0] != removeBookmark:
+                    modifiedBookmarks = modifiedBookmarks + line
+                else:
+                    foundBookmark = True
+            
+            if foundBookmark is True:
+                bookmarksFile.seek(0)
+                bookmarksFile.truncate()
+                bookmarksFile.write(modifiedBookmarks)
+            else:
+                print("Bookmark: " + "'" + removeBookmark + "'" + " does not exist", file=sys.stderr)
+                exit()
+    
 
 def main():
     args = get_args()
@@ -222,6 +253,10 @@ def main():
     # Adds a new bookmark 
     if args.addBookmark is not None:
         addBookmark(filePath, seperator, args.addBookmark)
+        exit()
+    
+    if args.removeBookmark is not None:
+        removeBookmark(filePath, seperator, args.removeBookmark)
         exit()
      
     # Set the launcher
