@@ -35,6 +35,17 @@ def get_args():
         metavar = "FILE",
         default = "~/.config/bookmenu/bookmarks"
     )
+     
+    parser.add_argument(
+        "-s",
+        "--seperator",
+        help = "Selects what bookmark seperator should be used, any character is supported"+
+        " however it's recommended to choose something which is not a special character in"+
+        " your bookmark format",
+        metavar = "SEPERATOR",
+        default = ","
+    )
+
 
     args = parser.parse_args()
 
@@ -79,7 +90,7 @@ def main():
     args = get_args()
     bookmarkURL = args.url
     bookmarkName = args.bookmark
-    seperator = ":"
+    seperator = args.seperator
     
     # Set file path
     filePath = os.path.expanduser(args.filePath)
