@@ -53,7 +53,6 @@ def get_args():
 
 
 def findBookmark(bookmarkName, seperator, filePath):
-    # LATER EXPAND USER IF PROVIDED
     with open(filePath, "r") as bookmarksFile:
         for line in bookmarksFile:
             bookmark = line.split(seperator)
@@ -77,6 +76,11 @@ def convertToNewLineSeperated(file, seperator):
             bookmark = line.split(seperator)
             if len(bookmark) == 2:
                 convertedList.append(bookmark[0] + "\n")
+    
+    # Guard against opening launcher with no bookmarks
+    if len(convertedList) == 0:
+        print("No bookmarks found, check the file name and seperator used")
+        exit()
 
     # Sort string into alphabetical order
     convertedList.sort()
