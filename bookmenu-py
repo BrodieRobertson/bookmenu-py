@@ -106,6 +106,7 @@ def missingBrowserFile(browser):
     exit()
     
 def findBookmark(bookmarkName, seperator, filePath):
+    foundBookmark = False
     try:
         f = open(filePath, "r")
     except FileNotFoundError:
@@ -115,16 +116,16 @@ def findBookmark(bookmarkName, seperator, filePath):
             for line in bookmarksFile:
                 bookmark = line.split(seperator)
                 if len(bookmark) == 2 and bookmark[0] == bookmarkName:
+                    foundBookmark = True
                     # Grab the URL
                     return bookmark[1]
-
-    return ""
+    
+    if foundBookmark is not True:
+        print("Bookmark: " + '"' + bookmarkName + "'" +  " does not exist", file=sys.stderr)
+        exit()
+        
 
 def openBookmark(bookmarkURL, browser):
-    if bookmarkURL == "":
-        print("No bookmark selected", file=sys.stderr)
-        exit()
-
     try:  
         Popen([browser, bookmarkURL])
     except FileNotFoundError:
@@ -244,7 +245,7 @@ def main():
     # Exit early if browser is set wrong 
     if shutil.which(browser) is None:
         missingBrowserFile(browser)
-    
+         
     # Attempt to open preselected bookmark
     if bookmarkName is not None: 
         openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
