@@ -4,7 +4,8 @@ from subprocess import run, Popen, PIPE, STDOUT
 import argparse
 import sys
 
-browser = os.getenv("BROWSER")
+defaultBrowser = "firefox"
+defaultLauncher = "dmenu"
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -14,7 +15,7 @@ def get_args():
     )
 
     parser.add_argument(
-        "-b",
+        "-o",
         "--bookmark",
         help = "Selects which bookmark to open skipping the selection dialogue",
         metavar = "BOOKMARK"
@@ -54,6 +55,15 @@ def get_args():
         " theorectically function",
         metavar = "LAUNCHER",
     )
+     
+    parser.add_argument(
+        "-b" ,
+        "--browser",
+        help = "Sets the application used for opening the bookmark, browsers were the initial" +
+        " intended use but works with anything that supports opening files in the " +
+        " BROWSER BOOKMARK format, most text editors will also work",
+        metavar = "BROWSER",
+    )
 
     args = parser.parse_args()
 
@@ -76,12 +86,15 @@ def findBookmark(bookmarkName, seperator, filePath):
 
     return ""
 
-def openBookmark(bookmarkURL):
+def openBookmark(bookmarkURL, browser):
     if bookmarkURL == "":
         print("No bookmark selected")
         exit()
 
-    run([browser, bookmarkURL])
+    try:  
+        run([browser, bookmarkURL])
+    except FileNotFoundError:
+        print("Browser: " + '"' + browser + "'" +  " does not exist")
 
 def convertToNewLineSeperated(filePath, seperator):
     convertedList = []
@@ -119,17 +132,25 @@ def main():
 
     filePath = os.path.expanduser(args.filePath)
     
+    # Set the browser
+    if args.browser != None:
+        browser = args.browser
+    elif os.getenv("BROWSER") != None:
+        browser = os.getenv("BROWSER")
+    else:
+        browser = defaultBrowser
+    
     # Set the launcher
     if args.launcher != None:
         launcher = args.launcher
     elif os.getenv("LAUNCHER") != None:
         launcher = os.getenv("LAUNCHER")
     else:
-        launcher = "dmenu"
+        launcher = defaultLauncher
          
     # Skip right to opening an address
     if bookmarkURL != None:
-        openBookmark(bookmarkURL)
+        openBookmark(bookmarkURL, browser)
 
     # Open dialogue to find bookmark
     if bookmarkName == None:
@@ -141,10 +162,10 @@ def main():
             print("Launcher: " + '"' + launcher + '"' + " not found", file=sys.stderr)
             exit()
 
-        openBookmark(findBookmark(bookmarkName, seperator, filePath))
+        openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
     # Attempt to open preselected bookmark
     else:
-        openBookmark(findBookmark(bookmarkName, seperator, filePath))
+        openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
 
 if __name__ == "__main__":
     main()
