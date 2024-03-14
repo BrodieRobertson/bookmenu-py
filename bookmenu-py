@@ -8,7 +8,8 @@ import shutil
 defaultBrowser = "firefox"
 defaultLauncher = "dmenu"
 
-def get_args():
+def getArgs():
+    """Parses the arguments taken in from the command line"""
     parser = argparse.ArgumentParser(
         prog = "bookmenu-py",
         description = "Typically used to seperate out your bookmarks from your browser " +
@@ -94,18 +95,22 @@ def get_args():
     return args
 
 def missingBookmarksFile(filePath): 
+    """Provides error handling for a missing bookmarks file"""
     print("Bookmarks file: " + '"' + filePath + '"' + " does not exist", file=sys.stderr)
     exit()
     
 def missingLauncherFile(launcher):
+    """Provides error handling for a missing launcher"""
     print("Launcher: " + '"' + launcher + '"' + " not found", file=sys.stderr)            
     exit()
     
 def missingBrowserFile(browser): 
+    """Provides error handling for a missing browser"""
     print("Browser: " + '"' + browser + "'" +  " does not exist", file=sys.stderr)
     exit()
     
 def findBookmark(bookmarkName, seperator, filePath):
+    """Finds a bookmark within a bookmarks file from it's name"""
     foundBookmark = False
     try:
         f = open(filePath, "r")
@@ -126,6 +131,7 @@ def findBookmark(bookmarkName, seperator, filePath):
         
 
 def openBookmark(bookmarkURL, browser):
+    """Opens the selected bookmark within the browser of choice"""
     try:  
         Popen([browser, bookmarkURL])
     except FileNotFoundError:
@@ -133,6 +139,7 @@ def openBookmark(bookmarkURL, browser):
         
 
 def alphabeticallySortList(bookmarksList):
+    """Alphabetically sorts the bookmark file for better user readability"""
     # Sort string into alphabetical order
     bookmarksList.sort()
     alpheticalString = ""
@@ -142,6 +149,7 @@ def alphabeticallySortList(bookmarksList):
     return alpheticalString
 
 def convertToList(filePath, seperator):
+    """Converts the bookmarks file into a consisten displayable format"""
     convertedList = []
     try:
         f = open(filePath, "r")
@@ -163,6 +171,7 @@ def convertToList(filePath, seperator):
     return alphabeticallySortList(convertedList)
     
 def convertToNewLineSeperated(filePath, seperator):
+    """Converts the bookmarks file into a clean new line seperated list of bookmark names"""
     convertedList = []
     try:
         f = open(filePath, "r")
@@ -184,6 +193,7 @@ def convertToNewLineSeperated(filePath, seperator):
     return alphabeticallySortList(convertedList)
 
 def addBookmark(filePath, seperator, newBookmark): 
+    """Adds a bookmark into the selected bookmarks file"""
     try:
         f = open(filePath, "a")
     except FileNotFoundError:
@@ -193,6 +203,7 @@ def addBookmark(filePath, seperator, newBookmark):
             bookmarksFile.write(newBookmark[0] + seperator + newBookmark[1])
             
 def removeBookmark(filePath, seperator, removeBookmark):
+    """Removes a bookmark from the selected bookmarks file"""
     foundBookmark = False
     modifiedBookmarks = ""
     try: 
@@ -218,7 +229,8 @@ def removeBookmark(filePath, seperator, removeBookmark):
     
 
 def main():
-    args = get_args()
+    """Starting point of the bookmenu application"""
+    args = getArgs()
     bookmarkURL = args.url
     bookmarkName = args.bookmark
     seperator = args.seperator 
