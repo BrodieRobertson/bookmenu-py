@@ -114,7 +114,38 @@ def openBookmark(bookmarkURL, browser):
         Popen([browser, bookmarkURL])
     except FileNotFoundError:
         missingBrowserFile(browser)
+        
 
+def alphabeticallySortList(bookmarksList):
+    # Sort string into alphabetical order
+    bookmarksList.sort()
+    alpheticalString = ""
+    for bookmark in bookmarksList:
+        alpheticalString = alpheticalString + bookmark
+    
+    return alpheticalString
+
+def convertToList(filePath, seperator):
+    convertedList = []
+    try:
+        f = open(filePath, "r")
+    except FileNotFoundError:
+        missingBookmarksFile(filePath)
+    else:
+        with open(filePath, "r") as bookmarksFile:
+            for line in bookmarksFile:
+                bookmark = line.split(seperator)
+                if len(bookmark) == 2:
+                    convertedList.append(bookmark[0] + ": " + bookmark[1])
+    
+    # Guard against opening launcher with no bookmarks
+    if len(convertedList) == 0:
+        print("No bookmarks found, check if the file name " + '"' + filePath + '"' +
+        " and seperator " + '"' + seperator + '"' + " are correct", file=sys.stderr)
+        exit()
+ 
+    return alphabeticallySortList(convertedList)
+    
 def convertToNewLineSeperated(filePath, seperator):
     convertedList = []
     try:
@@ -133,14 +164,8 @@ def convertToNewLineSeperated(filePath, seperator):
         print("No bookmarks found, check if the file name " + '"' + filePath + '"' +
         " and seperator " + '"' + seperator + '"' + " are correct", file=sys.stderr)
         exit()
-
-    # Sort string into alphabetical order
-    convertedList.sort()
-    convertedString = ""
-    for bookmark in convertedList:
-        convertedString = convertedString + bookmark
-        
-    return convertedString
+ 
+    return alphabeticallySortList(convertedList)
 
 def main():
     args = get_args()
@@ -153,6 +178,11 @@ def main():
     # Check early if bookmarks file exists
     if not os.path.isfile(filePath):
         missingBookmarksFile(filePath) 
+
+    # Skip opening a book mark and just list them 
+    if args.list is True:
+        print(convertToList(filePath, seperator))
+        exit()
   
     # Set the browser
     if args.browser is not None:
