@@ -2,6 +2,7 @@
 import os
 from subprocess import run, Popen, PIPE, STDOUT
 import argparse
+import sys
 
 browser = os.getenv("BROWSER")
 
@@ -63,7 +64,7 @@ def findBookmark(bookmarkName, seperator, filePath):
     try:
         f = open(filePath, "r")
     except FileNotFoundError:
-        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist")
+        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist", file=sys.stderr)
         exit()
     else:
         with open(filePath, "r") as bookmarksFile:
@@ -87,7 +88,7 @@ def convertToNewLineSeperated(filePath, seperator):
     try:
         f = open(filePath, "r")
     except FileNotFoundError:
-        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist")
+        print("Bookmarks file: " + '"' + filePath + '"' + " does not exist", file=sys.stderr)
         exit()
     else:
         with open(filePath, "r") as bookmarksFile:
@@ -99,7 +100,7 @@ def convertToNewLineSeperated(filePath, seperator):
     # Guard against opening launcher with no bookmarks
     if len(convertedList) == 0:
         print("No bookmarks found, check if the file name " + '"' + filePath + '"' +
-        " and seperator " + '"' + seperator + '"' + " are correct")
+        " and seperator " + '"' + seperator + '"' + " are correct", file=sys.stderr)
         exit()
 
     # Sort string into alphabetical order
@@ -137,7 +138,7 @@ def main():
             launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
             bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
         except FileNotFoundError:
-            print("Launcher: " + '"' + launcher + '"' + " not found")
+            print("Launcher: " + '"' + launcher + '"' + " not found", file=sys.stderr)
             exit()
 
         openBookmark(findBookmark(bookmarkName, seperator, filePath))
