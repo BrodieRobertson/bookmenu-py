@@ -69,11 +69,18 @@ def get_args():
     )
      
     parser.add_argument(
-        "-i" ,
+        "-i",
         "--list",
         help = "Lists out all the bookmarks in the selected file, can be useful when skipping" +
         " launcher to open to open a bookmark directly",
         action="store_true"
+    )
+    
+    parser.add_argument(
+        "-a",
+        "--addBookmark",
+        nargs = 2,
+        help = "Adds a new bookmark into the selected bookmarks file"
     )
 
     args = parser.parse_args()
@@ -169,6 +176,15 @@ def convertToNewLineSeperated(filePath, seperator):
  
     return alphabeticallySortList(convertedList)
 
+def addBookmark(filePath, seperator, newBookmark): 
+    try:
+        f = open(filePath, "a")
+    except FileNotFoundError:
+        missingBookmarksFile(filePath)
+    else: 
+        with open(filePath, "a") as bookmarksFile:
+            bookmarksFile.write(newBookmark[0] + seperator + newBookmark[1])
+
 def main():
     args = get_args()
     bookmarkURL = args.url
@@ -201,6 +217,11 @@ def main():
     # Attempt to open preselected bookmark
     if bookmarkName is not None: 
         openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
+        exit()
+
+    # Adds a new bookmark 
+    if args.addBookmark is not None:
+        addBookmark(filePath, seperator, args.addBookmark)
         exit()
      
     # Set the launcher
