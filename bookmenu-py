@@ -133,8 +133,12 @@ def main():
     # Open dialogue to find bookmark
     if bookmarkName == None:
         convertedFile = convertToNewLineSeperated(filePath, seperator)
-        launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
-        bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
+        try: 
+            launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
+            bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
+        except FileNotFoundError:
+            print("Launcher: " + '"' + launcher + '"' + " not found")
+            exit()
 
         openBookmark(findBookmark(bookmarkName, seperator, filePath))
     # Attempt to open preselected bookmark
