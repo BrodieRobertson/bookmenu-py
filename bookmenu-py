@@ -30,8 +30,10 @@ def get_args():
     parser.add_argument(
         "-f",
         "--filePath",
-        help = "Selects which file should be searched for bookmarks",
-        metavar = "FILE"
+        help = "Selects which file should be searched for bookmarks, the default"+
+        " path is ~/.config/bookmenu/bookmarks",
+        metavar = "FILE",
+        default = "~/.config/bookmenu/bookmarks"
     )
 
     args = parser.parse_args()
@@ -80,10 +82,7 @@ def main():
     seperator = ":"
     
     # Set file path
-    if args.filePath != None:
-        filePath = os.path.expanduser(args.filePath)
-    else:
-        filePath = os.path.expanduser("~/.config/bookmenu/bookmarks")
+    filePath = os.path.expanduser(args.filePath)
         
     # Skip right to opening an address
     if bookmarkURL != None:
