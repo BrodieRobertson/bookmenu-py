@@ -155,35 +155,35 @@ def main():
         missingBookmarksFile(filePath)
     
     # Set the browser
-    if args.browser != None:
+    if args.browser is not None:
         browser = args.browser
-    elif os.getenv("BROWSER") != None:
+    elif os.getenv("BROWSER") is not None:
         browser = os.getenv("BROWSER")
     else:
         browser = defaultBrowser
 
     # Exit early if browser is set wrong 
-    if shutil.which(browser) == None:
+    if shutil.which(browser) is None:
         missingBrowserFile(browser)
      
     # Set the launcher
-    if args.launcher != None:
+    if args.launcher is not None:
         launcher = args.launcher
-    elif os.getenv("LAUNCHER") != None:
+    elif os.getenv("LAUNCHER") is not None:
         launcher = os.getenv("LAUNCHER")
     else:
         launcher = defaultLauncher
 
     # Exit early if launcher is set wrong 
-    if shutil.which(launcher) == None:
+    if shutil.which(launcher) is None:
         missingLauncherFile(launcher)
               
     # Skip right to opening an address
-    if bookmarkURL != None:
+    if bookmarkURL is not None:
         openBookmark(bookmarkURL, browser)
 
     # Open dialogue to find bookmark
-    if bookmarkName == None:
+    if bookmarkName is None:
         convertedFile = convertToNewLineSeperated(filePath, seperator)
         try: 
             launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
