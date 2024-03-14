@@ -53,7 +53,8 @@ def get_args():
         "--launcher",
         help = "Sets the launcher to be used to select a bookmark to open, dmenu, rofi and tofi," +
         " are known to work but any app that accepts new line seperated data should" +
-        " theorectically function",
+        " theorectically function, default value is " + defaultLauncher + " if set $LAUNCHER" +
+        " will be used instead",
         metavar = "LAUNCHER",
     )
      
@@ -62,7 +63,8 @@ def get_args():
         "--browser",
         help = "Sets the application used for opening the bookmark, browsers were the initial" +
         " intended use but works with anything that supports opening files in the " +
-        " BROWSER BOOKMARK format, most text editors will also work",
+        " BROWSER BOOKMARK format, most text editors will also work, default value is " +
+        defaultBrowser + " if set $BROWSER will be used instead",
         metavar = "BROWSER",
     )
      
