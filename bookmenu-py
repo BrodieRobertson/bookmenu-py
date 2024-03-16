@@ -297,7 +297,7 @@ def main():
     # Open dialogue to find bookmark
     convertedFile = convertToNewLineSeperated(filePath, seperator)
     try: 
-        launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
+        launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, text=True)
         bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
     except FileNotFoundError:
         missingLauncherFile(launcher)
