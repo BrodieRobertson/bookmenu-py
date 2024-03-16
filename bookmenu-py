@@ -111,6 +111,12 @@ def missingBrowserFile(browser):
     
 def findBookmark(bookmarkName, seperator, filePath):
     """Finds a bookmark within a bookmarks file from it's name"""
+
+    # Error early if bookmark name is empty 
+    if bookmarkName == "":
+        print("No bookmark selected", file=sys.stderr)
+        exit()
+
     foundBookmark = False
     try:
         f = open(filePath, "r")
