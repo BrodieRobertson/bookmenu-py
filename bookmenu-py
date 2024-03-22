@@ -7,6 +7,7 @@ import shutil
 
 defaultBrowser = "firefox"
 defaultLauncher = "dmenu"
+defaultTerminal = "xterm"
 
 def getArgs():
     """Parses the arguments taken in from the command line"""
@@ -60,7 +61,7 @@ def getArgs():
     )
      
     parser.add_argument(
-        "-b" ,
+        "-b",
         "--browser",
         help = "Sets the application used for opening the bookmark, browsers were the initial" +
         " intended use but works with anything that supports opening files in the " +
@@ -68,13 +69,27 @@ def getArgs():
         defaultBrowser + " if set $BROWSER will be used instead",
         metavar = "BROWSER",
     )
+    
+    parser.add_argument(
+        "-t",
+        "--terminal",
+        help = "",
+        metavar = "TERMINAL",
+    )
+    
+    parser.add_argument(
+        "-e",
+        "--useTerminal",
+        help = "",
+        action = "store_true"
+    )
      
     parser.add_argument(
         "-i",
         "--list",
         help = "Lists out all the bookmarks in the selected file, can be useful when skipping" +
         " launcher to open to open a bookmark directly",
-        action="store_true"
+        action = "store_true"
     )
     
     parser.add_argument(
@@ -129,21 +144,28 @@ def findBookmark(bookmarkName, seperator, filePath):
                 if len(bookmark) == 2 and bookmark[0] == bookmarkName:
                     foundBookmark = True
                     # Grab the URL
-                    return bookmark[1]
+                    return bookmark[1].rstrip()
     
     if foundBookmark is not True:
         print("Bookmark: " + '"' + bookmarkName + "'" +  " does not exist", file=sys.stderr)
         exit()
         
-
-def openBookmark(bookmarkURL, browser):
+def openBookmark(bookmarkURL, browser, terminal = None):
     """Opens the selected bookmark within the browser of choice"""
+
+    # Python really doesn't like shortened home directories 
+    if bookmarkURL[0] == "~":
+        bookmarkURL = os.path.expanduser(bookmarkURL)
+
     try:  
-        Popen([browser, bookmarkURL])
+        if terminal is None:
+            Popen([browser, bookmarkURL])
+        else:
+            Popen([terminal, "-e", browser, bookmarkURL])
+
     except FileNotFoundError:
         missingBrowserFile(browser)
         
-
 def alphabeticallySortList(bookmarksList):
     """Alphabetically sorts the bookmark file for better user readability"""
     # Sort string into alphabetical order
@@ -260,6 +282,15 @@ def main():
     else:
         browser = defaultBrowser
 
+    # Don't bother setting terminal if it won't be used 
+    if args.useTerminal is True:
+        if args.terminal is not None:
+            terminal = args.terminal
+        elif os.getenv("TERMINAL") is not None:
+            terminal = os.getenv("TERMINAL")
+        else:
+            terminal = defaultTerminal
+
     # Exit early if browser is set wrong 
     if shutil.which(browser) is None:
         missingBrowserFile(browser)
@@ -273,10 +304,13 @@ def main():
     if args.addBookmark is not None:
         addBookmark(filePath, seperator, args.addBookmark)
         exit()
-    
+
+    # Removes an old bookmark 
     if args.removeBookmark is not None:
         removeBookmark(filePath, seperator, args.removeBookmark)
         exit()
+
+    print(args.useTerminal)
      
     # Set the launcher
     if args.launcher is not None:
@@ -296,13 +330,17 @@ def main():
 
     # Open dialogue to find bookmark
     convertedFile = convertToNewLineSeperated(filePath, seperator)
-    try: 
+    try:  
         launcherProcess = Popen([launcher], stdout=PIPE, stdin=PIPE, text=True)
         bookmarkName = launcherProcess.communicate(input=convertedFile)[0].strip()
+
     except FileNotFoundError:
         missingLauncherFile(launcher)
 
-    openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
+    if args.useTerminal is False:
+        openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
+    else: 
+        openBookmark(findBookmark(bookmarkName, seperator, filePath), browser, terminal)
 
 if __name__ == "__main__":
     main()
