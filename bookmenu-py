@@ -64,7 +64,7 @@ def getArgs():
         "-b",
         "--browser",
         help = "Sets the application used for opening the bookmark, browsers were the initial" +
-        " intended use but works with anything that supports opening files in the " +
+        " intended use but works with anything that supports opening files in the" +
         " BROWSER BOOKMARK format, most text editors will also work, default value is " +
         defaultBrowser + " if set $BROWSER will be used instead",
         metavar = "BROWSER",
@@ -73,14 +73,19 @@ def getArgs():
     parser.add_argument(
         "-t",
         "--terminal",
-        help = "",
+        help = "Sets the terminal to be used when launching a terminal based browser" +
+        " only terminals which support -e for opening an app on launch are supported" +
+        ", this should include most reasonable browsers, by default it is set to " + defaultTerminal +
+        " if set $TERMINAL will be used instead",
         metavar = "TERMINAL",
     )
     
     parser.add_argument(
         "-e",
         "--useTerminal",
-        help = "",
+        help = "Tells bookmenu that you wish to launch your browser from a terminal" +
+        " in most cases this is uneeded however it may come in handy if you wish to launch a" +
+        " file instead of a browser bookmark",
         action = "store_true"
     )
      
