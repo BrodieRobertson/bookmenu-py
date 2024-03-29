@@ -156,23 +156,23 @@ def parseRegularConfig(file, configDictionary):
             configLine = line.split("=")
             # Check for malformed lines
             if len(configLine) != 2:
-                print("Missing key or value on line " + str(index))
+                print("Missing key or value on line " + str(index), file=sys.stderr)
                 continue
             if configLine[0][0] == " ":
-                print("Line " + str(index) + " begins with a space, skipping")
+                print("Line " + str(index) + " begins with a space, skipping", file=sys.stderr)
                 continue
             
             configLine[0] = configLine[0].strip()
             configLine[1] = configLine[1].strip()
             if configLine[0] not in configDictionary:
-                print("On line " + str(index) + " " + '"' + configLine[0] + '"' + " is an invalid key")
+                print("On line " + str(index) + " " + '"' + configLine[0] + '"' + " is an invalid key", file=sys.stderr)
                 continue
 
             # Special handle boolean values
             if configLine[0] == "useTerminal":
                 boolean = stringToBoolean(configLine[1])
                 if boolean is None:
-                    print("On line " + str(index) + " useTerminal must be true or false")
+                    print("On line " + str(index) + " useTerminal must be true or false", file=sys.stderr)
                     continue
                 else:
                     configDictionary[configLine[0]] = boolean
@@ -190,14 +190,14 @@ def parseJSONConfig(jsonData, configDictionary):
                 if isinstance(value, bool):
                     configDictionary[key] = value
                 else:
-                    print("\"useTerminal must be set to a boolean\"")
+                    print("\"useTerminal must be set to a boolean\"", file=sys.stderr)
             else:
                 if isinstance(value, str):
                     configDictionary[key] = value
                 else:
-                    print('"' + key + '"' + " must be set to a string")
+                    print('"' + key + '"' + " must be set to a string", file=sys.stderr)
         else:
-            print('"' + key + '"' + " is an invalid key")
+            print('"' + key + '"' + " is an invalid key", file=sys.stderr)
     return configDictionary
 
 def stringToBoolean(string):
