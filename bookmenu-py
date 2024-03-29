@@ -8,6 +8,10 @@ import shutil
 defaultBrowser = "firefox"
 defaultLauncher = "dmenu"
 defaultTerminal = "xterm"
+defaultSeperator = ","
+defaultUseTerminal = False
+defaultConfigPath = "~/.config/bookmenu/config"
+defaultFilePath = "~/.config/bookmenu/bookmarks" 
 
 def getArgs():
     """Parses the arguments taken in from the command line"""
@@ -35,9 +39,8 @@ def getArgs():
         "-f",
         "--filePath",
         help = "Selects which file should be searched for bookmarks, the default"+
-        " path is ~/.config/bookmenu/bookmarks",
+        " path is " + defaultFilePath,
         metavar = "FILE",
-        default = "~/.config/bookmenu/bookmarks"
     )
      
     parser.add_argument(
@@ -47,7 +50,6 @@ def getArgs():
         " however it's recommended to choose something which is not a special character in"+
         " your bookmark format",
         metavar = "SEPERATOR",
-        default = ","
     )
     
     parser.add_argument(
@@ -76,7 +78,7 @@ def getArgs():
         help = "Sets the terminal to be used when launching a terminal based browser" +
         " only terminals which support -e for opening an app on launch are supported" +
         ", this should include most reasonable browsers, by default it is set to " + defaultTerminal +
-        " if set $TERMINAL will be used instead",
+        " if set $TERM will be used instead",
         metavar = "TERMINAL",
     )
     
@@ -86,7 +88,7 @@ def getArgs():
         help = "Tells bookmenu that you wish to launch your browser from a terminal" +
         " in most cases this is uneeded however it may come in handy if you wish to launch a" +
         " file instead of a browser bookmark",
-        action = "store_true"
+        choices=["true", "false"]
     )
      
     parser.add_argument(
@@ -101,13 +103,20 @@ def getArgs():
         "-a",
         "--addBookmark",
         nargs = 2,
-        help = "Adds a new bookmark into the selected bookmarks file"
+        help = "Adds a new bookmark into the selected bookmarks file",
+        metavar = ["NAME", "URL"]
     )
     
     parser.add_argument(
         "-r",
         "--removeBookmark", 
         help = "Removes this book bookmark from the selected bookmarks file" 
+    )
+    
+    parser.add_argument(
+        "-c",
+        "--config",
+        help = "Sets the location of the config file, by default it is located at" + defaultConfigPath
     )
 
     args = parser.parse_args()
@@ -128,6 +137,72 @@ def missingBrowserFile(browser):
     """Provides error handling for a missing browser"""
     print("Browser: " + '"' + browser + "'" +  " does not exist", file=sys.stderr)
     exit()
+    
+def missingConfigFile(configPath):
+    """Provides error handing for a missing config file"""
+    print("Config File: "  + '"' + configPath + '"' + " does not exist", file=sys.stderr)
+    exit()
+
+def stringToBoolean(string):
+    """Converts a string into a boolean or None if invalid"""
+    string = string.lower()
+    validValues = {
+        "true": True,
+        "false": False
+    }
+    if string in validValues:
+        return validValues[string]
+    else:
+        return None
+
+def getConfigs(configPath):
+    """Loads in all the settings from the config file"""
+    
+    configs = {
+        "browser": None,
+        "terminal": None,
+        "useTerminal": None,
+        "launcher": None,
+        "seperator": None,
+        "filePath": None 
+    }
+    try:
+        f = open(configPath, "r")
+    except FileNotFoundError:
+        missingConfigFile(configPath)
+    else:
+        with open(configPath) as configFile:
+            index = 1
+            for line in configFile:
+                # Check for comments and empty lines
+                if line[0] == "#" or line == "\n":
+                    continue
+                else:
+                    configLine = line.split("=")
+                    # Check for malformed lines
+                    if len(configLine) != 2:
+                        print("ERROR LINE: " + str(index))
+                    if configLine[0][0] == " ":
+                        print("SPACE ERROR LINE: " + str(index))
+                    
+                    configLine[0] = configLine[0].strip()
+                    configLine[1] = configLine[1].strip()
+                    if configLine[0] not in configs:
+                        print("KEY ERROR LINE: " + str(index))
+ 
+                    # Special handle boolean values
+                    if configLine[0] == "useTerminal":
+                        boolean = stringToBoolean(configLine[1])
+                        if boolean is None:
+                            print("BOOLEAN ERROR LINE: " + str(index))
+                        else:
+                            configs[configLine[0]] = boolean
+                    # Set each config value
+                    else:
+                        configs[configLine[0]] = configLine[1]
+
+                index += 1
+    return configs
     
 def findBookmark(bookmarkName, seperator, filePath):
     """Finds a bookmark within a bookmarks file from it's name"""
@@ -260,15 +335,35 @@ def removeBookmark(filePath, seperator, removeBookmark):
                 print("Bookmark: " + "'" + removeBookmark + "'" + " does not exist", file=sys.stderr)
                 exit()
     
-
 def main():
     """Starting point of the bookmenu application"""
     args = getArgs()
     bookmarkURL = args.url
     bookmarkName = args.bookmark
-    seperator = args.seperator 
 
-    filePath = os.path.expanduser(args.filePath)
+    # Sets config path 
+    if args.config is not None:
+        configPath = os.path.expanduser(args.config)
+    else:
+        configPath = os.path.expanduser(defaultConfigPath)
+
+    configValues = getConfigs(configPath) 
+     
+    # Sets the seperator
+    if args.seperator is not None:
+        seperator = args.seperator 
+    elif configValues["seperator"] is not None:
+        seperator = configValues["seperator"]
+    else:
+        seperator = defaultSeperator
+
+    # Sets the file path
+    if args.filePath is not None:
+        filePath = os.path.expanduser(args.filePath)
+    elif configValues["filePath"] is not None:
+        filePath = os.path.expanduser(configValues["filePath"])
+    else:
+        filePath = defaultFilePath
     
     # Check early if bookmarks file exists
     if not os.path.isfile(filePath):
@@ -282,17 +377,30 @@ def main():
     # Set the browser
     if args.browser is not None:
         browser = args.browser
+    elif configValues["browser"] is not None:
+        browser = configValues["browser"]
     elif os.getenv("BROWSER") is not None:
         browser = os.getenv("BROWSER")
     else:
         browser = defaultBrowser
-
+    
+    # Set useTerminal
+    if args.useTerminal is not None:
+        useTerminal = stringToBoolean(args.useTerminal)
+    elif configValues["useTerminal"] is not None:
+        useTerminal = configValues["useTerminal"]
+    else:
+        useTerminal = defaultUseTerminal
+    
+    
     # Don't bother setting terminal if it won't be used 
-    if args.useTerminal is True:
+    if useTerminal is True:
         if args.terminal is not None:
             terminal = args.terminal
-        elif os.getenv("TERMINAL") is not None:
-            terminal = os.getenv("TERMINAL")
+        elif configValues["terminal"] is not None:
+            terminal = configValues["terminal"]
+        elif os.getenv("TERM") is not None:
+            terminal = os.getenv("TERM")
         else:
             terminal = defaultTerminal
 
@@ -314,9 +422,7 @@ def main():
     if args.removeBookmark is not None:
         removeBookmark(filePath, seperator, args.removeBookmark)
         exit()
-
-    print(args.useTerminal)
-     
+ 
     # Set the launcher
     if args.launcher is not None:
         launcher = args.launcher
@@ -342,7 +448,7 @@ def main():
     except FileNotFoundError:
         missingLauncherFile(launcher)
 
-    if args.useTerminal is False:
+    if useTerminal is False:
         openBookmark(findBookmark(bookmarkName, seperator, filePath), browser)
     else: 
         openBookmark(findBookmark(bookmarkName, seperator, filePath), browser, terminal)
