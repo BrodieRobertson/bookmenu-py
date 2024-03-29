@@ -288,8 +288,25 @@ def alphabeticallySortList(bookmarksList):
     
     return alpheticalString
 
+def convertSeperatorFileToList(file, seperator):
+    """Converts a regular sepetator file into list format"""
+    convertedList = []
+    for line in file:
+        bookmark = line.split(seperator)
+        if len(bookmark) == 2:
+            convertedList.append(bookmark[0] + ": " + bookmark[1])
+    return convertedList
+
+def convertJSONFileToList(jsonData):
+    """Converts JSON data into a consistent displayable list format"""
+    convertedList = []
+    for key, value in jsonData.items():
+        convertedList.append(key + ": " + value + "\n")
+        
+    return convertedList
+
 def convertToList(filePath, seperator):
-    """Converts the bookmarks file into a consisten displayable format"""
+    """Converts the bookmarks file into a consistent displayable format"""
     convertedList = []
     try:
         f = open(filePath, "r")
@@ -297,10 +314,12 @@ def convertToList(filePath, seperator):
         missingBookmarksFile(filePath)
     else:
         with open(filePath, "r") as bookmarksFile:
-            for line in bookmarksFile:
-                bookmark = line.split(seperator)
-                if len(bookmark) == 2:
-                    convertedList.append(bookmark[0] + ": " + bookmark[1])
+            try:
+                jsonData = json.load(bookmarksFile)
+                convertedList = convertJSONFileToList(jsonData)
+            except json.JSONDecodeError:
+                bookmarksFile.seek(0)
+                convertedList = convertSeperatorFileToList(bookmarksFile, seperator)
     
     # Guard against opening launcher with no bookmarks
     if len(convertedList) == 0:
