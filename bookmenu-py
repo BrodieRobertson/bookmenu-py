@@ -234,8 +234,21 @@ def getConfigs(configPath):
                 return parseJSONConfig(jsonData, configDictionary)
             except json.JSONDecodeError:
                 configFile.seek(0)
-                return parseRegularConfig(configFile, configDictionary)
-    
+                return parseRegularConfig(configFile, configDictionary) 
+
+def findBookmarkInSeperatorFile(bookmarkName, seperator, bookmarksFile):
+    """Finds the specific bookmark in a regular seperator file"""
+    for line in bookmarksFile:
+        bookmark = line.split(seperator)
+        if len(bookmark) == 2 and bookmark[0] == bookmarkName:
+            # Grab the URL
+            return bookmark[1].rstrip()
+
+def findBookmarkInJSONFile(bookmarkName, jsonData):
+    """Finds the specific bookmark in a JSON file"""
+    if bookmarkName in jsonData:
+        return jsonData[bookmarkName]
+
 def findBookmark(bookmarkName, seperator, filePath):
     """Finds a bookmark within a bookmarks file from it's name"""
 
@@ -244,23 +257,24 @@ def findBookmark(bookmarkName, seperator, filePath):
         print("No bookmark selected", file=sys.stderr)
         exit()
 
-    foundBookmark = False
     try:
         f = open(filePath, "r")
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else:
         with open(filePath, "r") as bookmarksFile:
-            for line in bookmarksFile:
-                bookmark = line.split(seperator)
-                if len(bookmark) == 2 and bookmark[0] == bookmarkName:
-                    foundBookmark = True
-                    # Grab the URL
-                    return bookmark[1].rstrip()
+            try:
+                jsonData = json.load(bookmarksFile)
+                foundBookmark = findBookmarkInJSONFile(bookmarkName, jsonData)
+            except json.JSONDecodeError:
+                bookmarksFile.seek(0)
+                foundBookmark = findBookmarkInSeperatorFile(bookmarkName, seperator, bookmarksFile)
     
-    if foundBookmark is not True:
+    if foundBookmark is None:
         print("Bookmark: " + '"' + bookmarkName + "'" +  " does not exist", file=sys.stderr)
         exit()
+    else:
+        return foundBookmark
         
 def openBookmark(bookmarkURL, browser, terminal = None):
     """Opens the selected bookmark within the browser of choice"""
@@ -328,7 +342,23 @@ def convertToList(filePath, seperator):
         exit()
  
     return alphabeticallySortList(convertedList)
-    
+
+def convertJSONToNewLineSeperated(jsonData):
+    """Converts a JSON bookmarks file into a new line seperated list"""
+    convertedList = []
+    for key in jsonData.keys():
+        convertedList.append(key + "\n")
+    return convertedList
+
+def convertSeperatorFileToNewLineSeperated(bookmarksFile, seperator):
+    """Converts the regular seperator file into a new line seperated file"""
+    convertedList = []
+    for line in bookmarksFile:
+        bookmark = line.split(seperator)
+        if len(bookmark) == 2:
+            convertedList.append(bookmark[0] + "\n")
+    return convertedList
+
 def convertToNewLineSeperated(filePath, seperator):
     """Converts the bookmarks file into a clean new line seperated list of bookmark names"""
     convertedList = []
@@ -338,10 +368,12 @@ def convertToNewLineSeperated(filePath, seperator):
         missingBookmarksFile(filePath)
     else:
         with open(filePath, "r") as bookmarksFile:
-            for line in bookmarksFile:
-                bookmark = line.split(seperator)
-                if len(bookmark) == 2:
-                    convertedList.append(bookmark[0] + "\n")
+            try:
+                jsonData = json.load(bookmarksFile)
+                convertedList = convertJSONToNewLineSeperated(jsonData)
+            except json.JSONDecodeError:
+                bookmarksFile.seek(0)
+                convertedList = convertSeperatorFileToNewLineSeperated(bookmarksFile, seperator)
     
     # Guard against opening launcher with no bookmarks
     if len(convertedList) == 0:
