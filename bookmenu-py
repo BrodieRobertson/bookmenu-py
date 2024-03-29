@@ -146,8 +146,9 @@ def missingConfigFile(configPath):
 
 def parseRegularConfig(file, configDictionary):
     """Parses the standard configuration file for values"""
-    index = 1
+    index = 0
     for line in file:
+        index += 1
         # Check for comments and empty lines
         if line[0] == "#" or line == "\n":
             continue
@@ -155,45 +156,48 @@ def parseRegularConfig(file, configDictionary):
             configLine = line.split("=")
             # Check for malformed lines
             if len(configLine) != 2:
-                print("ERROR LINE: " + str(index))
+                print("Missing key or value on line " + str(index))
+                continue
             if configLine[0][0] == " ":
-                print("SPACE ERROR LINE: " + str(index))
+                print("Line " + str(index) + " begins with a space, skipping")
+                continue
             
             configLine[0] = configLine[0].strip()
             configLine[1] = configLine[1].strip()
             if configLine[0] not in configDictionary:
-                print("KEY ERROR LINE: " + str(index))
+                print("On line " + str(index) + " " + '"' + configLine[0] + '"' + " is an invalid key")
+                continue
 
             # Special handle boolean values
             if configLine[0] == "useTerminal":
                 boolean = stringToBoolean(configLine[1])
                 if boolean is None:
-                    print("BOOLEAN ERROR LINE: " + str(index))
+                    print("On line " + str(index) + " useTerminal must be true or false")
+                    continue
                 else:
                     configDictionary[configLine[0]] = boolean
             # Set each config value
             else:
                 configDictionary[configLine[0]] = configLine[1]
 
-        index += 1
     return configDictionary
 
 def parseJSONConfig(jsonData, configDictionary):
     """Parses the JSON configuration file for values"""
-    for key,value in jsonData:
+    for key, value in jsonData.items():
         if key in configDictionary:
             if key == "useTerminal":
                 if isinstance(value, bool):
                     configDictionary[key] = value
                 else:
-                    print("INVALID DATA: " + key)
+                    print("\"useTerminal must be set to a boolean\"")
             else:
                 if isinstance(value, str):
                     configDictionary[key] = value
                 else:
-                    print("INVALID DATA: " + key)
+                    print('"' + key + '"' + " must be set to a string")
         else:
-            print("INVALID KEY ERROR: " + key)
+            print('"' + key + '"' + " is an invalid key")
     return configDictionary
 
 def stringToBoolean(string):
@@ -228,7 +232,7 @@ def getConfigs(configPath):
             try:
                 jsonData = json.load(configFile)        
                 return parseJSONConfig(jsonData, configDictionary)
-            except:
+            except json.JSONDecodeError:
                 configFile.seek(0)
                 return parseRegularConfig(configFile, configDictionary)
     
