@@ -4,6 +4,7 @@ from subprocess import Popen, PIPE, STDOUT
 import argparse
 import sys
 import shutil
+import json
 
 defaultBrowser = "firefox"
 defaultLauncher = "dmenu"
@@ -143,6 +144,58 @@ def missingConfigFile(configPath):
     print("Config File: "  + '"' + configPath + '"' + " does not exist", file=sys.stderr)
     exit()
 
+def parseRegularConfig(file, configDictionary):
+    """Parses the standard configuration file for values"""
+    index = 1
+    for line in file:
+        # Check for comments and empty lines
+        if line[0] == "#" or line == "\n":
+            continue
+        else:
+            configLine = line.split("=")
+            # Check for malformed lines
+            if len(configLine) != 2:
+                print("ERROR LINE: " + str(index))
+            if configLine[0][0] == " ":
+                print("SPACE ERROR LINE: " + str(index))
+            
+            configLine[0] = configLine[0].strip()
+            configLine[1] = configLine[1].strip()
+            if configLine[0] not in configDictionary:
+                print("KEY ERROR LINE: " + str(index))
+
+            # Special handle boolean values
+            if configLine[0] == "useTerminal":
+                boolean = stringToBoolean(configLine[1])
+                if boolean is None:
+                    print("BOOLEAN ERROR LINE: " + str(index))
+                else:
+                    configDictionary[configLine[0]] = boolean
+            # Set each config value
+            else:
+                configDictionary[configLine[0]] = configLine[1]
+
+        index += 1
+    return configDictionary
+
+def parseJSONConfig(jsonData, configDictionary):
+    """Parses the JSON configuration file for values"""
+    for key,value in jsonData:
+        if key in configDictionary:
+            if key == "useTerminal":
+                if isinstance(value, bool):
+                    configDictionary[key] = value
+                else:
+                    print("INVALID DATA: " + key)
+            else:
+                if isinstance(value, str):
+                    configDictionary[key] = value
+                else:
+                    print("INVALID DATA: " + key)
+        else:
+            print("INVALID KEY ERROR: " + key)
+    return configDictionary
+
 def stringToBoolean(string):
     """Converts a string into a boolean or None if invalid"""
     string = string.lower()
@@ -158,7 +211,7 @@ def stringToBoolean(string):
 def getConfigs(configPath):
     """Loads in all the settings from the config file"""
     
-    configs = {
+    configDictionary = {
         "browser": None,
         "terminal": None,
         "useTerminal": None,
@@ -172,37 +225,12 @@ def getConfigs(configPath):
         missingConfigFile(configPath)
     else:
         with open(configPath) as configFile:
-            index = 1
-            for line in configFile:
-                # Check for comments and empty lines
-                if line[0] == "#" or line == "\n":
-                    continue
-                else:
-                    configLine = line.split("=")
-                    # Check for malformed lines
-                    if len(configLine) != 2:
-                        print("ERROR LINE: " + str(index))
-                    if configLine[0][0] == " ":
-                        print("SPACE ERROR LINE: " + str(index))
-                    
-                    configLine[0] = configLine[0].strip()
-                    configLine[1] = configLine[1].strip()
-                    if configLine[0] not in configs:
-                        print("KEY ERROR LINE: " + str(index))
- 
-                    # Special handle boolean values
-                    if configLine[0] == "useTerminal":
-                        boolean = stringToBoolean(configLine[1])
-                        if boolean is None:
-                            print("BOOLEAN ERROR LINE: " + str(index))
-                        else:
-                            configs[configLine[0]] = boolean
-                    # Set each config value
-                    else:
-                        configs[configLine[0]] = configLine[1]
-
-                index += 1
-    return configs
+            try:
+                jsonData = json.load(configFile)        
+                return parseJSONConfig(jsonData, configDictionary)
+            except:
+                configFile.seek(0)
+                return parseRegularConfig(configFile, configDictionary)
     
 def findBookmark(bookmarkName, seperator, filePath):
     """Finds a bookmark within a bookmarks file from it's name"""
@@ -391,8 +419,7 @@ def main():
         useTerminal = configValues["useTerminal"]
     else:
         useTerminal = defaultUseTerminal
-    
-    
+     
     # Don't bother setting terminal if it won't be used 
     if useTerminal is True:
         if args.terminal is not None:
