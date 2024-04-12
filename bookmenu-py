@@ -11,8 +11,14 @@ defaultLauncher = "dmenu"
 defaultTerminal = "xterm"
 defaultSeperator = ","
 defaultUseTerminal = False
-defaultConfigPath = "~/.config/bookmenu/config"
-defaultFilePath = "~/.config/bookmenu/bookmarks" 
+
+xdgPath = os.getenv("XDG_CONFIG_HOME")
+if xdgPath is None:
+    defaultConfigPath = "~/.config/bookmenu/config"
+    defaultFilePath = "~/.config/bookmenu/bookmarks" 
+else:
+    defaultConfigPath = xdgPath + "/bookmenu/config"
+    defaultFilePath = xdgPath + "/bookmenu/bookmarks" 
 
 def getArgs():
     """Parses the arguments taken in from the command line"""
