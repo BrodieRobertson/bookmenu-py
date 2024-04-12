@@ -330,7 +330,6 @@ def findBookmark(bookmarkName, seperator, filePath):
         
 def openBookmark(bookmarkURL, browser, terminal = None):
     """Opens the selected bookmark within the browser of choice"""
-
     # Python really doesn't like shortened home directories 
     if bookmarkURL[0] == "~":
         bookmarkURL = os.path.expanduser(bookmarkURL)

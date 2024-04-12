@@ -12,16 +12,18 @@ Bookmenu-py is a Python rewrite of my old browser bookmark script.
 It provides the ability to quickly access your bookmarks from launchers like dmenu and rofi to allow easy switching between browsers without the need to worry about migrating bookmarks.
 
 ---
+
 **[<kbd> <br> Install <br> </kbd>][Install]** 
 **[<kbd> <br> Quick Start <br> </kbd>][Quick Start]** 
 **[<kbd> <br> Configure <br> </kbd>][Configure]** 
+
 ---
 
 <br>
 
 </div>
 
-### Features
+## Features
 
 - Seperate bookmarks out from your web browser
 - Suitable for quickly accessing files as well
@@ -34,7 +36,7 @@ It provides the ability to quickly access your bookmarks from launchers like dme
 
 <br>
 
-### FAQ
+## FAQ
 
 #### What was wrong with the original script?
 
@@ -69,4 +71,4 @@ not meant to be a perfectly written codebase.
 [Badge Issues]: https://img.shields.io/github/issues/BrodieRobertson/bookmenu-py
 [Badge Pull Requests]: https://img.shields.io/github/issues-pr/BrodieRobertson/bookmenu-py
 [Badge License]: https://img.shields.io/github/license/BrodieRobertson/bookmenu-py
-[Badge Language]: https://img.shields.io/github/languages/top/BrodieRobertson/bookmeny-py
+[Badge Language]: https://img.shields.io/github/languages/top/BrodieRobertson/bookmenu-py
