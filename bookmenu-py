@@ -21,6 +21,13 @@ def getArgs():
         description = "Typically used to seperate out your bookmarks from your browser " +
         "however may be suitable handling shorcuts to access files"
     )
+    
+    parser.add_argument(
+        "-v",
+        "--validate",
+        help = "Validates the contents of the specified bookmarks file",
+        action = "store_true"
+    )
 
     parser.add_argument(
         "-o",
@@ -143,6 +150,47 @@ def missingConfigFile(configPath):
     """Provides error handing for a missing config file"""
     print("Config File: "  + '"' + configPath + '"' + " does not exist", file=sys.stderr)
     exit()
+
+def validateJSON(jsonData):
+    """Attempts to validate the JSON bookmarks file"""
+    correct = True
+    for key in jsonData:
+        if isinstance(jsonData[key], list):
+            correct = False
+            print("Key: " + '"' + key + '"' + " contains a list", file=sys.stderr)
+        elif isinstance(jsonData[key], dict):
+            print("Key: " + '"' + key + '"' + " contains a dictionary", file=sys.stderr)
+            correct = False
+    return correct
+
+
+def validateNormal(fileData, seperator):
+    """Attempts to validate the normal seperator bookmarks file"""
+    index = 0
+    correct = True
+    for line in fileData:
+        index += 1
+        data = line.split(seperator)
+
+        if(len(data) != 2):
+            correct = False
+            print("Bookmark on line " + str(index) + " is invalid")
+    return correct
+
+def validate(filePath, seperator):
+    """Attempts to validate the bookmarks file"""
+    try:
+        f = open(filePath, "r")
+    except FileNotFoundError:
+        missingBookmarksFile(filePath)
+    else:
+        with open(filePath, "r") as bookmarksFile:
+            try:
+                jsonData = json.load(bookmarksFile)
+                return validateJSON(jsonData)
+            except json.JSONDecodeError:
+                bookmarksFile.seek(0)
+                return validateNormal(bookmarksFile, seperator)
 
 def parseRegularConfig(file, configDictionary):
     """Parses the standard configuration file for values"""
@@ -421,6 +469,7 @@ def removeBookmark(filePath, seperator, removeBookmark):
 def main():
     """Starting point of the bookmenu application"""
     args = getArgs()
+    
     bookmarkURL = args.url
     bookmarkName = args.bookmark
 
@@ -451,6 +500,11 @@ def main():
     # Check early if bookmarks file exists
     if not os.path.isfile(filePath):
         missingBookmarksFile(filePath) 
+     
+    if args.validate == True:
+        validated = validate(filePath, seperator)
+        if not validated:
+            exit()
 
     # Skip opening a book mark and just list them 
     if args.list is True:
