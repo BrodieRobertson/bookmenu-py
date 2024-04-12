@@ -19,8 +19,6 @@ It provides the ability to quickly access your bookmarks from launchers like dme
 
 ---
 
-<br>
-
 </div>
 
 ## Features
@@ -33,8 +31,6 @@ It provides the ability to quickly access your bookmarks from launchers like dme
 - Support for XDG_CONFIG_PATH
 - Works with most dmenu style launchers (tofi, rofi, etc)
 - Works with most browsers (if something breaks, let me know)
-
-<br>
 
 ## FAQ
 
