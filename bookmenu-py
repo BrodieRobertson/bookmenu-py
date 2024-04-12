@@ -434,12 +434,20 @@ def convertToNewLineSeperated(filePath, seperator):
 def addBookmark(filePath, seperator, newBookmark): 
     """Adds a bookmark into the selected bookmarks file"""
     try:
-        f = open(filePath, "a")
+        f = open(filePath, "r")
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else: 
-        with open(filePath, "a") as bookmarksFile:
-            bookmarksFile.write(newBookmark[0] + seperator + newBookmark[1])
+        try:
+            jsonData = json.load(f)
+            jsonData[newBookmark[0]] = newBookmark[1]
+            f.close()
+            
+            with open(filePath, "w") as bookmarksFile:
+                json.dump(jsonData, bookmarksFile)
+        except json.JSONDecodeError:
+            with open(filePath, "a") as bookmarksFile:
+                bookmarksFile.write(newBookmark[0] + seperator + newBookmark[1])
             
 def removeBookmark(filePath, seperator, removeBookmark):
     """Removes a bookmark from the selected bookmarks file"""
