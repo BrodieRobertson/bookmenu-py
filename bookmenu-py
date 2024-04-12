@@ -456,20 +456,34 @@ def removeBookmark(filePath, seperator, removeBookmark):
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else: 
-        for line in bookmarksFile:
-            currentBookmark = line.split(seperator)
-            if currentBookmark[0] != removeBookmark:
-                modifiedBookmarks = modifiedBookmarks + line
+        try:
+            jsonData = json.load(bookmarksFile)
+            bookmarksFile.close()
+
+            if removeBookmark in jsonData:
+                del jsonData[removeBookmark]
+                with open(filePath, "w") as bookmarksFile:
+                    json.dump(jsonData, bookmarksFile)
             else:
-                foundBookmark = True
-        bookmarksFile.close()
-        
-        if foundBookmark is True:
-            with open(filePath, "w") as bookmarksFile:
-                bookmarksFile.write(modifiedBookmarks)
-        else:
-            print("Bookmark: " + "'" + removeBookmark + "'" + " does not exist", file=sys.stderr)
-            exit()
+                print("Bookmark: " + "'" + removeBookmark + "'" + " does not exist", file=sys.stderr) 
+            
+        except json.JSONDecodeError:
+            bookmarksFile.seek(0)
+            # Search for the bookmark
+            for line in bookmarksFile:
+                currentBookmark = line.split(seperator)
+                if currentBookmark[0] != removeBookmark:
+                    modifiedBookmarks = modifiedBookmarks + line
+                else:
+                    foundBookmark = True
+            bookmarksFile.close()
+            
+            if foundBookmark is True:
+                with open(filePath, "w") as bookmarksFile:
+                    bookmarksFile.write(modifiedBookmarks)
+            else:
+                print("Bookmark: " + "'" + removeBookmark + "'" + " does not exist", file=sys.stderr)
+                exit()
     
 def main():
     """Starting point of the bookmenu application"""
