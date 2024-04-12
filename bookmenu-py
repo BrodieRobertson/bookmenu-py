@@ -180,17 +180,16 @@ def validateNormal(fileData, seperator):
 def validate(filePath, seperator):
     """Attempts to validate the bookmarks file"""
     try:
-        f = open(filePath, "r")
+        bookmarksFile = open(filePath, "r")
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else:
-        with open(filePath, "r") as bookmarksFile:
-            try:
-                jsonData = json.load(bookmarksFile)
-                return validateJSON(jsonData)
-            except json.JSONDecodeError:
-                bookmarksFile.seek(0)
-                return validateNormal(bookmarksFile, seperator)
+        try:
+            jsonData = json.load(bookmarksFile)
+            return validateJSON(jsonData)
+        except json.JSONDecodeError:
+            bookmarksFile.seek(0)
+            return validateNormal(bookmarksFile, seperator)
 
 def parseRegularConfig(file, configDictionary):
     """Parses the standard configuration file for values"""
@@ -272,17 +271,16 @@ def getConfigs(configPath):
         "filePath": None 
     }
     try:
-        f = open(configPath, "r")
+        configFile = open(configPath, "r")
     except FileNotFoundError:
         missingConfigFile(configPath)
     else:
-        with open(configPath) as configFile:
-            try:
-                jsonData = json.load(configFile)        
-                return parseJSONConfig(jsonData, configDictionary)
-            except json.JSONDecodeError:
-                configFile.seek(0)
-                return parseRegularConfig(configFile, configDictionary) 
+        try:
+            jsonData = json.load(configFile)        
+            return parseJSONConfig(jsonData, configDictionary)
+        except json.JSONDecodeError:
+            configFile.seek(0)
+            return parseRegularConfig(configFile, configDictionary) 
 
 def findBookmarkInSeperatorFile(bookmarkName, seperator, bookmarksFile):
     """Finds the specific bookmark in a regular seperator file"""
@@ -306,17 +304,17 @@ def findBookmark(bookmarkName, seperator, filePath):
         exit()
 
     try:
-        f = open(filePath, "r")
+        bookmarksFile = open(filePath, "r")
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else:
-        with open(filePath, "r") as bookmarksFile:
-            try:
-                jsonData = json.load(bookmarksFile)
-                foundBookmark = findBookmarkInJSONFile(bookmarkName, jsonData)
-            except json.JSONDecodeError:
-                bookmarksFile.seek(0)
-                foundBookmark = findBookmarkInSeperatorFile(bookmarkName, seperator, bookmarksFile)
+        try:
+            jsonData = json.load(bookmarksFile)
+            foundBookmark = findBookmarkInJSONFile(bookmarkName, jsonData)
+        except json.JSONDecodeError:
+            bookmarksFile.seek(0)
+            foundBookmark = findBookmarkInSeperatorFile(bookmarkName, seperator, bookmarksFile)
+        bookmarksFile.close()
     
     if foundBookmark is None:
         print("Bookmark: " + '"' + bookmarkName + "'" +  " does not exist", file=sys.stderr)
@@ -371,17 +369,17 @@ def convertToList(filePath, seperator):
     """Converts the bookmarks file into a consistent displayable format"""
     convertedList = []
     try:
-        f = open(filePath, "r")
+        bookmarksFile = open(filePath, "r")
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else:
-        with open(filePath, "r") as bookmarksFile:
-            try:
-                jsonData = json.load(bookmarksFile)
-                convertedList = convertJSONFileToList(jsonData)
-            except json.JSONDecodeError:
-                bookmarksFile.seek(0)
-                convertedList = convertSeperatorFileToList(bookmarksFile, seperator)
+        try:
+            jsonData = json.load(bookmarksFile)
+            convertedList = convertJSONFileToList(jsonData)
+        except json.JSONDecodeError:
+            bookmarksFile.seek(0)
+            convertedList = convertSeperatorFileToList(bookmarksFile, seperator)
+        bookmarksFile.close()
     
     # Guard against opening launcher with no bookmarks
     if len(convertedList) == 0:
@@ -411,17 +409,17 @@ def convertToNewLineSeperated(filePath, seperator):
     """Converts the bookmarks file into a clean new line seperated list of bookmark names"""
     convertedList = []
     try:
-        f = open(filePath, "r")
+        bookmarksFile = open(filePath, "r")
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else:
-        with open(filePath, "r") as bookmarksFile:
-            try:
-                jsonData = json.load(bookmarksFile)
-                convertedList = convertJSONToNewLineSeperated(jsonData)
-            except json.JSONDecodeError:
-                bookmarksFile.seek(0)
-                convertedList = convertSeperatorFileToNewLineSeperated(bookmarksFile, seperator)
+        try:
+            jsonData = json.load(bookmarksFile)
+            convertedList = convertJSONToNewLineSeperated(jsonData)
+        except json.JSONDecodeError:
+            bookmarksFile.seek(0)
+            convertedList = convertSeperatorFileToNewLineSeperated(bookmarksFile, seperator)
+        bookmarksFile.close()
     
     # Guard against opening launcher with no bookmarks
     if len(convertedList) == 0:
@@ -454,25 +452,24 @@ def removeBookmark(filePath, seperator, removeBookmark):
     foundBookmark = False
     modifiedBookmarks = ""
     try: 
-        f = open(filePath, "r+")
+        bookmarksFile = open(filePath, "r")
     except FileNotFoundError:
         missingBookmarksFile(filePath)
     else: 
-        with open(filePath, "r+") as bookmarksFile:
-            for line in bookmarksFile:
-                currentBookmark = line.split(seperator)
-                if currentBookmark[0] != removeBookmark:
-                    modifiedBookmarks = modifiedBookmarks + line
-                else:
-                    foundBookmark = True
-            
-            if foundBookmark is True:
-                bookmarksFile.seek(0)
-                bookmarksFile.truncate()
-                bookmarksFile.write(modifiedBookmarks)
+        for line in bookmarksFile:
+            currentBookmark = line.split(seperator)
+            if currentBookmark[0] != removeBookmark:
+                modifiedBookmarks = modifiedBookmarks + line
             else:
-                print("Bookmark: " + "'" + removeBookmark + "'" + " does not exist", file=sys.stderr)
-                exit()
+                foundBookmark = True
+        bookmarksFile.close()
+        
+        if foundBookmark is True:
+            with open(filePath, "w") as bookmarksFile:
+                bookmarksFile.write(modifiedBookmarks)
+        else:
+            print("Bookmark: " + "'" + removeBookmark + "'" + " does not exist", file=sys.stderr)
+            exit()
     
 def main():
     """Starting point of the bookmenu application"""
