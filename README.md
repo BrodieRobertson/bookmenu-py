@@ -59,9 +59,9 @@ not meant to be a perfectly written codebase.
 [License]: LICENSE
 [Pull Requests]: https://github.com/BrodieRobertson/bookmenu-py/pulls
 [Issues]: https://github.com/BrodieRobertson/bookmenu-py/issues
-[Configure]: https://github.com/BrodieRobertson/bookmenu-py/
-[Install]: https://github.com/BrodieRobertson/bookmenu-py/
-[Quick Start]: https://github.com/BrodieRobertson/bookmenu-py/
+[Configure]: https://github.com/BrodieRobertson/bookmenu-py/wiki/Configuration
+[Install]: https://github.com/BrodieRobertson/bookmenu-py/wiki/Install-Guide
+[Quick Start]: https://github.com/BrodieRobertson/bookmenu-py/wiki/Quick-Start
 
 <!----------------------------------{ Badges }--------------------------------->
 [Badge Issues]: https://img.shields.io/github/issues/BrodieRobertson/bookmenu-py
