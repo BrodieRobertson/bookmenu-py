@@ -4,7 +4,6 @@
 
 [![Badge Pull Requests]][Pull Requests] 
 [![Badge Issues]][Issues] 
-[![Badge License]][License] 
 ![Badge Language] 
 
 Bookmenu-py is a Python rewrite of my old browser bookmark script.
@@ -66,5 +65,4 @@ not meant to be a perfectly written codebase.
 <!----------------------------------{ Badges }--------------------------------->
 [Badge Issues]: https://img.shields.io/github/issues/BrodieRobertson/bookmenu-py
 [Badge Pull Requests]: https://img.shields.io/github/issues-pr/BrodieRobertson/bookmenu-py
-[Badge License]: https://img.shields.io/github/license/BrodieRobertson/bookmenu-py
 [Badge Language]: https://img.shields.io/github/languages/top/BrodieRobertson/bookmenu-py
